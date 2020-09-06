@@ -2,11 +2,12 @@ version: "3.7"
 
 services:
   app:
-    args:
-      user: truekanonir
-      uid: 1000
-    context: ./
-    dockerfile: Dockerfile
+    build:
+      args:
+        user: truekanonir
+        uid: 1000
+      context: ./
+      dockerfile: Dockerfile
     image: skeleton
     container_name: skeleton_app
     restart: unless-stopped
