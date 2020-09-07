@@ -43,6 +43,27 @@ services:
     networks:
       - skeleton
 
+  redis:
+    image: redis:alpine3.9
+    container_name: "skeleton_redis"
+    ports:
+      - "6379:6379"
+    sysctls:
+      net.core.somaxconn: '511'
+    volumes:
+      - redis_data:/data
+
+  node:
+    build: ./docker/node
+    container_name: "skeleton_node"
+    tty: true
+    ports:
+      - 8080:8080
+    volumes:
+      - .:/app
+    depends_on:
+      - app
+
 networks:
   skeleton:
     driver: bridge
