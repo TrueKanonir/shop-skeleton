@@ -1,12 +1,18 @@
 FROM php:7.4-fpm
 
-RUN pecl install redis-5.1.0
-
 RUN apt-get update && apt-get install -y zlib1g-dev libicu-dev g++
 RUN docker-php-ext-configure intl
 RUN docker-php-ext-install intl
 
+RUN apt-get install -y \
+        libzip-dev \
+        zip \
+  && docker-php-ext-install zip
+
 RUN docker-php-ext-install pdo pdo_mysql
+
+RUN pecl install redis \
+    && docker-php-ext-enable redis
 
 # Set working directory
 WORKDIR /var/www

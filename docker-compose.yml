@@ -53,7 +53,7 @@ services:
     - "80:80"
     - "443:443"
     volumes:
-    - ./:/var/www/
+    - ./:/var/www/:cached
     - ./docker/nginx/conf.d/:/etc/nginx/conf.d/
     networks:
       - shop
