@@ -1,11 +1,15 @@
 version: "3.7"
 
 networks:
-  laravel:
+  shop:
     driver: bridge
 
 volumes:
+  esdata:
+    driver: local
   dbdata:
+    driver: local
+  redisdata:
     driver: local
 
 services:
@@ -14,14 +18,14 @@ services:
     build:
       context: ./docker/php-fpm
       dockerfile: Dockerfile
-    container_name: php-fpm
+    container_name: php_fpm
     volumes:
     - .:/var/www
     ports:
     - "9000:9000"
     hostname: skeleton.local
     networks:
-      - laravel
+      - shop
 
   mysql:
     image: mysql:5.7
@@ -40,7 +44,7 @@ services:
       SERVICE_TAGS: dev
       SERVICE_NAME: mysql
     networks:
-      - laravel
+      - shop
 
   nginx:
     image: nginx:latest
@@ -52,7 +56,43 @@ services:
     - ./:/var/www/
     - ./docker/nginx/conf.d/:/etc/nginx/conf.d/
     networks:
-      - laravel
+      - shop
     depends_on:
       - php
       - mysql
+
+  es:
+    image: docker.elastic.co/elasticsearch/elasticsearch:7.9.1
+    container_name: es
+    environment:
+      - cluster.name=shop-cluster
+      - node.name=shop-node
+      - bootstrap.memory_lock=true
+      - "ES_JAVA_OPTS=-Xms512m -Xmx512m"
+      - cluster.initial_master_nodes=shop-node
+    ulimits:
+      memlock:
+        soft: -1
+        hard: -1
+      nofile:
+        soft: 65536
+        hard: 65536
+    volumes:
+      - esdata:/usr/share/elasticsearch/data
+    ports:
+      - "9200:9200"
+      - "9300:9300"
+    depends_on:
+      - php
+    networks:
+      - shop
+
+  redis:
+    image: redis:latest
+    container_name: redis
+    volumes:
+      - redisdata:/data
+    ports:
+      - "6379:6379"
+    networks:
+      - shop
